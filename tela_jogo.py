@@ -1,7 +1,9 @@
 import tkinter as tk
-import time  # Adicionado para medir o tempo da resposta
+from tkinter import messagebox
+import time
 from utilitarios import resetaTela, rodape
 from logica_jogo import dadosFuncionais
+from recorde import carregar_recorde, salvar_recorde  # <-- Import do sistema de recorde
 
 class TelaJogo:
     def __init__(self, root):
@@ -20,8 +22,11 @@ class TelaJogo:
         self.partida_valor = 0
         self.partida = tk.StringVar(value="0")
 
+        self.recorde_valor = carregar_recorde()  # <-- Carrega o recorde inicial
+        self.recorde = tk.StringVar(value=str(self.recorde_valor))  # <-- StringVar para exibir o recorde
+
         self.rodando = True
-        self.tempo_inicio_questao = 0  # Armazena quando a questão começou
+        self.tempo_inicio_questao = 0
 
     def gerarQuestao(self):
         self.num1, self.num2 = dadosFuncionais.gerarNumeros()
@@ -45,8 +50,11 @@ class TelaJogo:
         tk.Label(cabecalho, text="Tempo: ").grid(row=0, column=4, padx=10)
         tk.Label(cabecalho, textvariable=self.tempo).grid(row=0, column=5, padx=10)
 
+        tk.Label(cabecalho, text="Recorde: ").grid(row=0, column=6, padx=10)  # <-- Label do recorde
+        tk.Label(cabecalho, textvariable=self.recorde).grid(row=0, column=7, padx=10)
+
         botao_parar = tk.Button(cabecalho, text="Parar", font=("Arial", 10), command=lambda: self.pararJogo(self.root))
-        botao_parar.grid(row=0, column=6, padx=10)
+        botao_parar.grid(row=0, column=8, padx=10)
 
         self.numeros_frame = tk.Frame(self.root)
         self.numeros_frame.pack(pady=40)
@@ -98,7 +106,7 @@ class TelaJogo:
             mensagem_bonus = ""
             self.pontuacao_valor += 100
 
-            if tempo_resposta < 5:
+            if tempo_resposta < 3:
                 self.pontuacao_valor += 500
                 mensagem_bonus = " ⏱️ +500 por rapidez!"
 
@@ -110,13 +118,13 @@ class TelaJogo:
         self.root.after(1000, self.proximaQuestao)
 
     def proximaQuestao(self):
-        if self.partida_valor < 100:
+        if self.partida_valor < 10:
             self.partida_valor += 1
             self.partida.set(str(self.partida_valor))
 
-        if self.partida_valor >= 100:
-            self.mensagem.config(text="🏁 Fim de Jogo!", fg="blue")
+        if self.partida_valor > 9:
             self.rodando = False
+            self.mostrarTelaFinal()
             return
 
         self.gerarQuestao()
@@ -134,6 +142,71 @@ class TelaJogo:
             self.root.after(1000, self.atualizaTempo)
 
     def pararJogo(self, root):
+        from tela_abertura import TelaInicial 
         self.rodando = False
-        root.running = False
-        root.continua_jogo.set(True)
+
+        resposta = messagebox.askyesno("Confirmar saída", "Tem certeza que deseja parar o jogo?")
+
+        if resposta:
+            self.pontuacao_valor = 0
+            self.partida_valor = 0
+            self.tempo_valor = 0
+            self.pontuacao.set("0")
+            self.partida.set("0")
+            self.tempo.set("0")
+            self.mensagem.config(text="")
+
+            TelaInicial(self.root).constroiLayout()
+        else:
+            self.rodando = True
+            self.tempo_inicio_questao = time.time()
+            self.atualizaTempo()
+
+    def mostrarTelaFinal(self):
+        resetaTela(self.root)
+        self.root.title("Fim de Jogo")
+
+        # Verifica e salva recorde
+        novo_recorde = False
+        if self.pontuacao_valor > self.recorde_valor:
+            salvar_recorde(self.pontuacao_valor)
+            self.recorde_valor = self.pontuacao_valor
+            self.recorde.set(str(self.recorde_valor))
+            novo_recorde = True
+
+        mensagem_texto = "🎉 Parabéns, você completou 20 partidas!"
+        if novo_recorde:
+            mensagem_texto += "\n🏅 Novo recorde atingido!"
+
+        mensagem = tk.Label(self.root, text=mensagem_texto, font=("Arial", 20), fg="green")
+        mensagem.pack(pady=20)
+
+        pontuacao_final = tk.Label(self.root, text=f"🏆 Sua pontuação final: {self.pontuacao_valor}", font=("Arial", 16))
+        pontuacao_final.pack(pady=10)
+
+        botoes_frame = tk.Frame(self.root)
+        botoes_frame.pack(pady=20)
+
+        btn_jogar_novamente = tk.Button(
+            botoes_frame, text="Jogar Novamente", font=("Arial", 14),
+            command=self.reiniciarJogo
+        )
+        btn_jogar_novamente.pack(side="left", padx=10)
+
+        btn_sair = tk.Button(
+            botoes_frame, text="Sair", font=("Arial", 14),
+            command=self.root.quit
+        )
+        btn_sair.pack(side="left", padx=10)
+
+    def reiniciarJogo(self):
+        self.pontuacao_valor = 0
+        self.partida_valor = 0
+        self.tempo_valor = 0
+        self.pontuacao.set("0")
+        self.partida.set("0")
+        self.tempo.set("0")
+        self.rodando = True
+        self.tempo_inicio_questao = time.time()
+        self.frameTelaJogo()  # <-- volta direto para a tela de jogo
+
