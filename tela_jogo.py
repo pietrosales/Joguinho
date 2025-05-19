@@ -122,28 +122,28 @@ class TelaJogo:
             self.partida_valor += 1
             self.partida.set(str(self.partida_valor))
 
-        if self.partida_valor > class TelaJogo:
-    def __init__(self, root):
-        self.root = root
-        self.num1 = 0
-        self.num2 = 0
-        self.operador = ""
-        self.resultado = 0
+        if self.partida_valor > 10:
+            def __init__(self, root):
+                self.root = root
+                self.num1 = 0
+                self.num2 = 0
+                self.operador = ""
+                self.resultado = 0
 
-        self.pontuacao_valor = 0
-        self.pontuacao = tk.StringVar(value="0")
+                self.pontuacao_valor = 0
+                self.pontuacao = tk.StringVar(value="0")
 
-        self.tempo_valor = 0
-        self.tempo = tk.StringVar(value="0")
+                self.tempo_valor = 0
+                self.tempo = tk.StringVar(value="0")
 
-        self.partida_valor = 0
-        self.partida = tk.StringVar(value="0")
+                self.partida_valor = 0
+                self.partida = tk.StringVar(value="0")
 
-        self.recorde_valor = carregar_recorde()  
-        self.recorde = tk.StringVar(value=str(self.recorde_valor))  
+                self.recorde_valor = carregar_recorde()  
+                self.recorde = tk.StringVar(value=str(self.recorde_valor))  
 
-        self.rodando = True
-        self.tempo_inicio_questao = 0
+                self.rodando = True
+                self.tempo_inicio_questao = 0
 
     def gerarQuestao(self):
         self.num1, self.num2 = dadosFuncionais.gerarNumeros()
@@ -331,7 +331,9 @@ class TelaJogo:
         return f'TelaJogo(pontuacao_valor={self.pontuacao_valor}, partida_valor={self.partida_valor}, tempo_valor={self.tempo_valor})'
 
     def __repr__(self):
-        return f'TelaJogo(pontuacao_valor={self.pontuacao_valor}, partida_valor={self.partida_valor}, tempo_valor={self.tempo_valor})'9:
+        def __repr__(self):
+            return f'TelaJogo(pontuacao_valor={self.pontuacao_valor}, partida_valor={self.partida_valor}, tempo_valor={self.tempo_valor})'
+
             self.rodando = False
             self.mostrarTelaFinal()
             return
